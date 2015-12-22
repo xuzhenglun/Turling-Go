@@ -14,7 +14,7 @@ import (
 var (
 	listenAddr = "localhost:4000" // server address
 	key        = "1172c3986ecaeb20ec066284eb35b041"
-	address    = `Http://www.tuling123.com/openapi/api`
+	address    = `http://www.tuling123.com/openapi/api`
 	publicAddr string
 )
 
