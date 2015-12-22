@@ -16,9 +16,9 @@ const (
 )
 
 var (
-	pwd, _        = os.Getwd()
-	RootTemp      = template.Must(template.ParseFiles(pwd + "/chat.html"))
-	JSON          = websocket.JSON           // codec for JSON
+	pwd, _   = os.Getwd()
+	RootTemp = template.Must(template.ParseFiles(pwd + "/chat.html"))
+	//JSON     = websocket.JSON // codec for JSON
 	Message       = websocket.Message        // codec for string, []byte
 	ActiveClients = make(map[ClientConn]int) // map containing clients
 )
@@ -57,6 +57,7 @@ func SockServer(ws *websocket.Conn) {
 
 	// for loop so the websocket stays open otherwise
 	// it'll close after one Receieve and Send
+	Robot := Turling.New(address, key)
 	for {
 		if err = Message.Receive(ws, &clientMessage); err != nil {
 			// If we cannot Read then the connection is closed
@@ -67,10 +68,9 @@ func SockServer(ws *websocket.Conn) {
 			return
 		}
 
-		Robot := Turling.New(address, key)
-		Reply := Robot.Reply(&Turling.Ask{Info: clientMessage})
+		Reply := Robot.Reply(clientMessage)
 
-		clientMessage = sockCli.clientIP + Reply
+		clientMessage = Reply
 		for cs, _ := range ActiveClients {
 			if err = Message.Send(cs.websocket, clientMessage); err != nil {
 				// we could not send the message to a peer

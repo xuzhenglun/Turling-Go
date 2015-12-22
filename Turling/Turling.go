@@ -1,6 +1,7 @@
 package Turling
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -33,7 +34,9 @@ func New(address, key string) *TurlingRobot {
 	return &t
 }
 
-func (this TurlingRobot) Reply(msg *Ask) string {
+func (this TurlingRobot) Reply(str string) string {
+	var msg Ask
+	json.Unmarshal([]byte(str), &msg)
 	if msg.Info == "" {
 		log.Println("Empty Text")
 		return ""
