@@ -2,18 +2,26 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
+	"encoding/json"
 	"github.com/xuzhenglun/Turling-Go/Turling"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
 )
 
-const (
+var (
 	listenAddr = "localhost:4000" // server address
 	key        = "1172c3986ecaeb20ec066284eb35b041"
 	address    = `Http://www.tuling123.com/openapi/api`
 )
+
+type config struct {
+	listenAddr string
+	key        string
+	address    string
+}
 
 var (
 	pwd, _   = os.Getwd()
@@ -27,6 +35,7 @@ var (
 func init() {
 	http.HandleFunc("/", RootHandler)
 	http.Handle("/sock", websocket.Handler(SockServer))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 }
 
 // Client connection consists of the websocket and the client ip
@@ -89,8 +98,56 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	cfg := getconfig()
+	if cfg != nil {
+		if cfg.listenAddr != "" {
+			listenAddr = cfg.listenAddr
+		}
+		if cfg.key != "" {
+			key = cfg.key
+		}
+		if address != "" {
+			address = cfg.address
+		}
+	}
+	log.Println("Listern at: ", listenAddr)
 	err := http.ListenAndServe(listenAddr, nil)
 	if err != nil {
 		panic("ListenAndServe: " + err.Error())
 	}
+}
+
+func getconfig() *config {
+	file, err := os.Open("config.json")
+	if err != nil {
+		log.Println("Config file is not exist")
+		log.Println("Default Setting will be actived")
+		return nil
+	}
+	defer file.Close()
+
+	buf := make([]byte, 1024)
+	conf := make([]byte, 0)
+
+	for {
+		n, err := file.Read(buf)
+		if err != nil && err != io.EOF {
+			panic(err)
+
+		}
+		if 0 == n {
+			break
+
+		}
+		conf = append(conf, buf[:n]...)
+
+	}
+
+	var cfg config
+	err = json.Unmarshal(conf, &cfg)
+	if err != nil {
+		return nil
+
+	}
+	return &cfg
 }
