@@ -15,12 +15,14 @@ var (
 	listenAddr = "localhost:4000" // server address
 	key        = "1172c3986ecaeb20ec066284eb35b041"
 	address    = `Http://www.tuling123.com/openapi/api`
+	publicAddr string
 )
 
 type config struct {
-	listenAddr string
-	key        string
-	address    string
+	ListenAddr string
+	Key        string
+	Address    string
+	PublicAddr string
 }
 
 var (
@@ -79,9 +81,8 @@ func SockServer(ws *websocket.Conn) {
 
 		Reply := Robot.Reply(clientMessage)
 
-		clientMessage = Reply
 		for cs, _ := range ActiveClients {
-			if err = Message.Send(cs.websocket, clientMessage); err != nil {
+			if err = Message.Send(cs.websocket, Reply); err != nil {
 				// we could not send the message to a peer
 				log.Println("Could not send message to ", cs.clientIP, err.Error())
 			}
@@ -91,7 +92,11 @@ func SockServer(ws *websocket.Conn) {
 
 // RootHandler renders the template for the root page
 func RootHandler(w http.ResponseWriter, req *http.Request) {
-	err := RootTemp.Execute(w, listenAddr)
+	if publicAddr == "" {
+		publicAddr = listenAddr
+	}
+	err := RootTemp.Execute(w, publicAddr)
+	log.Println("Public Address is "+publicAddr, listenAddr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -100,14 +105,17 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 func main() {
 	cfg := getconfig()
 	if cfg != nil {
-		if cfg.listenAddr != "" {
-			listenAddr = cfg.listenAddr
+		if cfg.ListenAddr != "" {
+			listenAddr = cfg.ListenAddr
 		}
-		if cfg.key != "" {
-			key = cfg.key
+		if cfg.Key != "" {
+			key = cfg.Key
 		}
-		if address != "" {
-			address = cfg.address
+		if cfg.Address != "" {
+			address = cfg.Address
+		}
+		if cfg.PublicAddr != "" {
+			publicAddr = cfg.PublicAddr
 		}
 	}
 	log.Println("Listern at: ", listenAddr)
@@ -146,6 +154,7 @@ func getconfig() *config {
 	var cfg config
 	err = json.Unmarshal(conf, &cfg)
 	if err != nil {
+		log.Println(err)
 		return nil
 
 	}
