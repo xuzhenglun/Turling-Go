@@ -96,7 +96,6 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 		publicAddr = listenAddr
 	}
 	err := RootTemp.Execute(w, publicAddr)
-	log.Println("Public Address is "+publicAddr, listenAddr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -119,7 +118,7 @@ func main() {
 		}
 	}
 	log.Println("Listern at: ", listenAddr)
-	err := http.ListenAndServe(listenAddr, nil)
+	err := http.ListenAndServeTLS(listenAddr, "cert.pem", "key.pem", nil)
 	if err != nil {
 		panic("ListenAndServe: " + err.Error())
 	}

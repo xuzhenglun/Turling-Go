@@ -20,7 +20,7 @@
 	<script src="static/js/turlingchat.js"></script>
 	<script>
 		try {
-			var sock = new WebSocket("ws://{{.}}/sock");
+			var sock = new WebSocket("wss://{{.}}/sock");
 			//sock.binaryType = 'blob'; // can set it to 'blob' or 'arraybuffer
 			console.log("Websocket - status: " + sock.readyState);
 			sock.onopen = function(m) {
