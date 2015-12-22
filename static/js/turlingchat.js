@@ -17,7 +17,7 @@ function turlingReply(m) {
       for (var key in obj.list) {
         info += '<a href="' + obj.list[key].detailurl + ' "target="_blank"> <p class=text-warning>' + obj.list[key].source + ': ' + obj.list[key].article + '</p></a><br />'
       }
-      $('#chatbox').append('<div style="margin-left:30px;><small>' + info + '</small></div>');
+      $('#chatbox').append('<div style="margin-left:30px;><small><a href=""></a>' + info + '</small></div>');
       break;
       //news
     case 305000:
@@ -28,7 +28,7 @@ function turlingReply(m) {
           info += '<div><a href="' + obj.list[key].detailurl + '" target="_blank" > <p class=text-warning>' + obj.list[key].trainnum + '</p></a><br />';
           info += '<p class=text-success>' + obj.list[key].start + '发车时间：' + obj.list[key].starttime + '---> ' + obj.list[key].terminal + '结束时间： ' + obj.list[key].endtime + '</p></div><br />';
         }
-        $('#chatbox').append('<div style="margin-left:30px;><blockquote>' + info + '</blockquote></div>');
+        $('#chatbox').append('<div style="margin-left:30px;><blockquote><a href=""></a>' + info + '</blockquote></div>');
       }
       break;
       //trains
@@ -39,7 +39,7 @@ function turlingReply(m) {
         for (var key in obj.list) {
           info += '<p class=text-warning>' + obj.list[key].flight + ': ' + '发车时间：' + obj.list[key].starttime + '---> ' + '结束时间： ' + obj.list[key].endtime + '</p><br />';
         }
-        $('#chatbox').append('<div style="margin-left:30px;><blockquote>' + info + '</blockquote></div>');
+        $('#chatbox').append('<div style="margin-left:30px;><blockquote><a href=""></a>' + info + '</blockquote></div>');
       }
       break;
       //plains
@@ -51,7 +51,7 @@ function turlingReply(m) {
           info += '<a href="' + obj.list[key].detailurl + '" target="_blank"> ' + obj.list[key].name + '</a><br />';
           info += '<p class=text-warning>' + obj.list[key].info + '</p><br />';
         }
-        $('#chatbox').append('<div style="margin-left:30px;><blockquote>' + info + '</blockquote></div>');
+        $('#chatbox').append('<div style="margin-left:30px;><blockquote><a href=""></a>' + info + '</blockquote></div>');
       }
       break;
       //menu
