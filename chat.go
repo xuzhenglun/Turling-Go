@@ -1,9 +1,9 @@
 package main
 
 import (
-	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"github.com/xuzhenglun/Turling-Go/Turling"
+	"golang.org/x/net/websocket"
 	"html/template"
 	"io"
 	"log"
