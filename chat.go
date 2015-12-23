@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/xuzhenglun/Turling-Go/Turling"
-	"golang.org/x/net/websocket"
+	"github.com/golang/net/websocket"
 	"html/template"
 	"io"
 	"log"
