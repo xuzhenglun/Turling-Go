@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/xuzhenglun/Turling-Go/Turling"
-	"golang.org/x/net/websocket"
+	"github.com/golang/net/websocket"
 	"html/template"
 	"io"
 	"log"
@@ -14,7 +14,7 @@ import (
 var (
 	listenAddr = "localhost:4000" // server address
 	key        = "1172c3986ecaeb20ec066284eb35b041"
-	address    = `Http://www.tuling123.com/openapi/api`
+	address    = `http://www.tuling123.com/openapi/api`
 	publicAddr string
 )
 
@@ -96,7 +96,6 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 		publicAddr = listenAddr
 	}
 	err := RootTemp.Execute(w, publicAddr)
-	log.Println("Public Address is "+publicAddr, listenAddr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
