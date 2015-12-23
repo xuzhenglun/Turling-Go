@@ -8,6 +8,8 @@ Web service的作业
 
 ```
 go build chat.go
+openssl genrsa -out key.pem 2048
+openssl req -new -x509 -key key.pem -out cert.pem -days 1095
 ./chat.go
 ```
 
