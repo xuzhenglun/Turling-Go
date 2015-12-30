@@ -5,7 +5,7 @@
 	<!-- Meta, title, CSS, favicons, etc. -->
 	<meta charset="utf-8">
 	<title>Turling Robot</title>
-  <link rel="icon" href="static/icon.ico" type="image/x-icon">
+	<link rel="icon" href="static/icon.ico" type="image/x-icon">
 	<link rel="shortcut icon" href="ico地址" type="image/x-icon">
 	<!-- Bootstrap core CSS -->
 	<style class="anchorjs"></style>
@@ -20,27 +20,34 @@
 	<script src="static/js/jquery.min.js"></script>
 	<script src="static/js/turlingchat.js"></script>
 	<script>
-		try {
-			var sock = new WebSocket("wss://{{.}}/sock");
-			//sock.binaryType = 'blob'; // can set it to 'blob' or 'arraybuffer
-			console.log("Websocket - status: " + sock.readyState);
-			sock.onopen = function(m) {
-				console.log("CONNECTION opened..." + this.readyState);
-			}
+		function connect(msg) {
+			try {
+				var sock = new WebSocket("wss://{{.}}/sock");
+				//sock.binaryType = 'blob'; // can set it to 'blob' or 'arraybuffer
+				console.log("Websocket - status: " + sock.readyState);
+				sock.onopen = function(m) {
+					console.log("CONNECTION opened..." + this.readyState);
+					if (msg != undefined){
+						this.send(msg)
+					}
+				}
 
-			sock.onmessage = function(m) {
-				turlingReply(m)
-			}
+				sock.onmessage = function(m) {
+					turlingReply(m)
+				}
 
-			sock.onerror = function(m) {
-				console.log("Error occured sending..." + m.data);
+				sock.onerror = function(m) {
+					console.log("Error occured sending..." + m.data);
+				}
+				sock.onclose = function(m) {
+					console.log("Disconnected - status " + this.readyState);
+				}
+				return sock
+			} catch (exception) {
+				console.log(exception);
 			}
-			sock.onclose = function(m) {
-				console.log("Disconnected - status " + this.readyState);
-			}
-		} catch (exception) {
-			console.log(exception);
 		}
+		var sock = connect();
 	</script>
 
 </head>
@@ -69,14 +76,14 @@
 
 			<div style="padding: 20px;"></div>
 
-				<div class="col-xs-12">
-					<p class="text-right">
-						<small> Powerby Jquery Websocket , Bootstrap and Truling API</small>
-					</p>
-					<p class="text-right">
-						<small> Copyright Reifucl 2015</small>
-					</p>
-				</div>
+			<div class="col-xs-12">
+				<p class="text-right">
+					<small> Powerby Jquery Websocket , Bootstrap and Truling API</small>
+				</p>
+				<p class="text-right">
+					<small> Copyright Reifucl 2015</small>
+				</p>
+			</div>
 	</div>
 
 	<script>
@@ -99,7 +106,19 @@
 						loc: geo.longitude
 					})
 				}
-				sock.send(ask);
+
+
+				if (sock.readyState == 3) {
+					sock = connect(ask);
+				}
+
+				try {
+					sock.send(ask);
+				} catch (e) {
+					console.log(e);
+				}
+
+
 				$('#chatbox').append('<blockquote class="blockquote-reverse text-primary">' + $('#textin').val() + '</blockquote>');
 				$('#textin').val("");
 			}

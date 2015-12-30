@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"github.com/xuzhenglun/Turling-Go/Turling"
-	"github.com/golang/net/websocket"
+	"golang.org/x/net/websocket"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 var (
@@ -16,6 +17,7 @@ var (
 	key        = "1172c3986ecaeb20ec066284eb35b041"
 	address    = `http://www.tuling123.com/openapi/api`
 	publicAddr string
+	Timeout    = time.Duration(30)
 )
 
 type config struct {
@@ -23,14 +25,14 @@ type config struct {
 	Key        string
 	Address    string
 	PublicAddr string
+	Timeout    int64
 }
 
 var (
 	pwd, _   = os.Getwd()
 	RootTemp = template.Must(template.ParseFiles(pwd + "/chat.html"))
 	//JSON     = websocket.JSON // codec for JSON
-	Message       = websocket.Message        // codec for string, []byte
-	ActiveClients = make(map[ClientConn]int) // map containing clients
+	Message = websocket.Message // codec for string, []byte
 )
 
 // Initialize handlers and websocket handlers
@@ -62,30 +64,63 @@ func SockServer(ws *websocket.Conn) {
 
 	client := ws.Request().RemoteAddr
 	log.Println("Client connected:", client)
-	sockCli := ClientConn{ws, client}
-	ActiveClients[sockCli] = 0
-	log.Println("Number of clients connected ...", len(ActiveClients))
 
-	// for loop so the websocket stays open otherwise
-	// it'll close after one Receieve and Send
-	Robot := Turling.New(address, key)
 	for {
-		if err = Message.Receive(ws, &clientMessage); err != nil {
-			// If we cannot Read then the connection is closed
-			log.Println("Websocket Disconnected waiting", err.Error())
-			// remove the ws client conn from our active clients
-			delete(ActiveClients, sockCli)
-			log.Println("Number of clients still connected ...", len(ActiveClients))
+
+		timeout1 := make(chan bool, 1)
+		timeout2 := make(chan bool)
+
+		// for loop so the websocket stays open otherwise
+		// it'll close after one Receieve and Send
+		Robot := Turling.New(address, key)
+
+		go func() {
+			time.Sleep(time.Second * Timeout)
+			timeout2 <- true
+			log.Println("Exit info sent")
+		}()
+
+		go func(ws *websocket.Conn) {
+			if err = Message.Receive(ws, &clientMessage); err != nil {
+				// If we cannot Read then the connection is closed
+				log.Println("Websocket Disconnected waiting", err.Error())
+				// remove the ws client conn from our active clients
+				return
+			}
+			timeout1 <- true
+		}(ws)
+
+		select {
+		case <-timeout1:
+		case <-timeout2:
+			log.Println("Timeout")
 			return
 		}
 
 		Reply := Robot.Reply(clientMessage)
+		timeout1 = make(chan bool, 0)
+		timeout2 = make(chan bool, 1)
 
-		for cs, _ := range ActiveClients {
-			if err = Message.Send(cs.websocket, Reply); err != nil {
+		go func(ws *websocket.Conn) {
+			if err = Message.Send(ws, Reply); err != nil {
 				// we could not send the message to a peer
-				log.Println("Could not send message to ", cs.clientIP, err.Error())
+				log.Println("Could not send message to ", client, err.Error())
+				return
 			}
+			timeout1 <- true
+		}(ws)
+		go func() {
+			time.Sleep(time.Second * Timeout)
+			timeout2 <- true
+			log.Println("Exit info sent")
+		}()
+		select {
+		case <-timeout1:
+			log.Println(client, "OK")
+			continue
+		case <-timeout2:
+			log.Println(client, "Timeout")
+			break
 		}
 	}
 }
@@ -115,6 +150,9 @@ func main() {
 		}
 		if cfg.PublicAddr != "" {
 			publicAddr = cfg.PublicAddr
+		}
+		if cfg.Timeout != 0 {
+			Timeout = time.Duration(cfg.Timeout)
 		}
 	}
 	log.Println("Listern at: ", listenAddr)

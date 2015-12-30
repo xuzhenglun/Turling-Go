@@ -1,4 +1,5 @@
 {
     "listenAddr":"0.0.0.0:443",
-    "publicAddr":"192.168.100.108:443"
+    "publicAddr":"127.0.0.1:443",
+    "timeout":60
 }
